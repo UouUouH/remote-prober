@@ -3,7 +3,7 @@
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import ServerFactory, Protocol
 from twisted.python import log
-import sys, time
+import sys, time.logging
 
 class ProberProtocol(Protocol):
 
@@ -70,9 +70,23 @@ class ProberService(object):
     def getPosition():
         return "fake position"
     
+def configLog():
+
+    logging.basicConfig(level = loggint.DEBUG, 
+                            format = '%(filename)s [%(lineno)d] %(levelname)s %(message)s',
+                            datefmt = '%Y %m %d,%H:%M:%S',
+                            filename = 'remote-prober.log',
+                            filemode = 'w')
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    formatter = logging.Formatter('%H:%M:%S %(levelname)-8s %(message)s')    
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+
+
 
 def main():
-
+    configLog()
     service = ProberService()
     factory = ProberFactory(service)
 
