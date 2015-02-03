@@ -169,7 +169,20 @@ class axis:
 
 
 
+def configLogging():
+
+    logging.basicConfig(level = logging.DEBUG, 
+                            format = '%(filename)s [%(lineno)d] %(levelname)s %(message)s',
+                            datefmt = '%Y %m %d,%H:%M:%S',
+                            filename = 'remote-prober.log',
+                            filemode = 'w')
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    formatter = logging.Formatter('%H:%M:%S %(levelname)-8s %(message)s')    
+    console.setFormatter(formatter)
         
+configLogging()
+
 chuck = {'x' : axis(name = 'chuck x', limit = 100000),
         'y' : axis(name = 'chuck y', limit = 100000),
         'z' : axis(name = 'chuck z', limit = 10000),
@@ -211,6 +224,7 @@ def moveChuck(**kwargs):
 
 def stopChuck(axisName):
     chuck[axisName].stop()
+    print "stop"
 
 
 def getChuckPosition():

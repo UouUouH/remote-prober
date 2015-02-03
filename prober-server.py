@@ -3,7 +3,8 @@
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import ServerFactory, Protocol
 from twisted.python import log
-import sys, time.logging
+import sys, time, logging
+import virtualProber
 
 class ProberProtocol(Protocol):
 
@@ -59,12 +60,39 @@ class ProberService(object):
     def receiveCommand(self, command):
         self.commandList.append(command)
 
+   #the format of command:
+   #command var1 var2 ... varn;
+    def parseCommand(self, res):
+        if res is not None:
+            data = res.split(';')
+            if data is not None:
+                f = data[0].split(' ')
+                log.msg("command %s" %(f,))
+                if f is not None:
+                    attrs = [x for x in dir(virtualProber) if '__' not in x]
+                    if f[0] in attrs:
+                        processFunction = getattr(virtualProber, f[0])
+                        print attrs
+                        kw ={'name':'x', 'distence':2000}
+                        print processFunction(**kw)
+                        log.msg("process fuction")
+                    else:
+                        log.msg("err command")
+                else:
+                    log.msg("err command")
+                    
+            else:
+                log.msg("err command")
+        else:
+            log.msg("err command")
+    
     def processCommand(self, res):
         processedCommand = None
         if len(self.commandList) > 0:
             processedCommand = self.commandList[0]
             del self.commandList[0]
         log.msg("processedCommand %s" %(processedCommand,))
+        self.parseCommand(processedCommand)
         return'rec:'+ processedCommand
     
     def getPosition():
@@ -72,7 +100,7 @@ class ProberService(object):
     
 def configLog():
 
-    logging.basicConfig(level = loggint.DEBUG, 
+    logging.basicConfig(level = logging.DEBUG, 
                             format = '%(filename)s [%(lineno)d] %(levelname)s %(message)s',
                             datefmt = '%Y %m %d,%H:%M:%S',
                             filename = 'remote-prober.log',
@@ -86,19 +114,21 @@ def configLog():
 
 
 def main():
-    configLog()
+    #configLog()
     service = ProberService()
     factory = ProberFactory(service)
 
     log.startLogging(sys.stdout)
+    
 
     from twisted.internet import reactor
-
 
     port = reactor.listenTCP(1000, factory, interface = 'localhost')
 
     print 'prober server on %s:%s' %(port.getHost(), port)
     
+    #pos = vitualProber.getChuckPosition()
+    #log.msg("pos: %s" %(pos,))
     reactor.run()
 
 if __name__ == '__main__':
