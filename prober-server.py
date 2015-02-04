@@ -5,6 +5,7 @@ from twisted.internet.protocol import ServerFactory, Protocol
 from twisted.python import log
 import sys, time, logging
 import virtualProber
+import pdb
 
 class ProberProtocol(Protocol):
 
@@ -62,29 +63,41 @@ class ProberService(object):
 
    #the format of command:
    #command var1 var2 ... varn;
+   #i.g.: chuck x functionname var;
     def parseCommand(self, res):
         if res is not None:
             data = res.split(';')
             if data is not None:
-                f = data[0].split(' ')
-                log.msg("command %s" %(f,))
-                if f is not None:
-                    attrs = [x for x in dir(virtualProber) if '__' not in x]
-                    if f[0] in attrs:
-                        processFunction = getattr(virtualProber, f[0])
-                        print attrs
-                        kw ={'name':'x', 'distence':2000}
-                        print processFunction(**kw)
-                        log.msg("process fuction")
-                    else:
+                c = data[0].split(' ')
+                log.msg("command %s" %(c,))
+                if len(c) == 3 or len(c) == 4:
+                    attrs1 = [x for x in dir(virtualProber) if '__' not in x]
+                    if c[0] not in attrs1:
                         log.msg("err command")
+                        return "err command"
+                    d = getattr(virtualProber, c[0])
+                    if c[1] not in d.keys():
+                        log.msg("err command")
+                        return "err command"
+                    k = c[1]
+                    attrs2 = [x for x in dir(virtualProber.axis)]
+                    if c[2] not in attrs2:
+                        log.msg("err command")
+                        return "err command"
+                    f = getattr(d[k],c[2])
+                    if len(c) == 3:
+                        return f()
+                    else:# len(c) ==4
+                        return f(c[3])
                 else:
                     log.msg("err command")
-                    
+                    return "err comman"
             else:
                 log.msg("err command")
+                return "err command"
         else:
             log.msg("err command")
+            return "err command"
     
     def processCommand(self, res):
         processedCommand = None
@@ -92,8 +105,9 @@ class ProberService(object):
             processedCommand = self.commandList[0]
             del self.commandList[0]
         log.msg("processedCommand %s" %(processedCommand,))
-        self.parseCommand(processedCommand)
-        return'rec:'+ processedCommand
+        d = self.parseCommand(processedCommand)
+        return 'rec:'+str(d)+'\n'
+
     
     def getPosition():
         return "fake position"

@@ -2,13 +2,13 @@
 import sys, time
 import logging
 
-class axis:
-    '''the unit of length is um
+class axis(object):
+    """the unit of length is um
     speed : um/s
     s1: speed = 1000um/s
     s2: speed = 5000um/s
     s3: speed = 10000um/s
-    s4: speed = 100000um/s'''
+    s4: speed = 100000um/s"""
 
     def __init__(self, name, limit = 10000):
         """
@@ -112,16 +112,14 @@ class axis:
     def moveStep(self, distence):
         print self.name, distence
 
-        logging.info("move step %f" %(distence,))
+        logging.info("move step %s" %(distence,))
         if self.enableFlag == False:
-            pdb.set_trace()
             return True
         sta = self.getStatus()
         if sta[0]:#is moving
             print "is moving"
-            pdb.set_trace()
             return True 
-        l = distence 
+        l = int(distence)
         if self.getPosition()+l > self.getLimit():
             l = self.getLimit()-l
         self.startTime = time.time()
@@ -129,32 +127,33 @@ class axis:
         self.estimateStopTime = self.startTime + l/self.movingSpeed
         print "move step", self.name, self.estimateStopTime
         self.isMoving = True
-        return False
+        return "move step "+distence
 
     def move(self, direction):
-        '''direction == 1: positive direction
-           direction == -1:nagetive direction
+        '''direction == '1': positive direction
+           direction == '-1':nagetive direction
         '''
-        logging.info("move, direction: %d" %(direction,))
+        logging.info("move, direction: %s" %(direction,))
         if self.enableFlag == False:
             return True
         sta = self.getStatus()
         if sta[0]:#is moving
             return True
         self.getPosition()
-        if direction == 1:
-            distence = self.getLimit() - self.getPosition()
-        elif direction  == -1:
-            distence = 0 - self.getPosition()
+        if direction == '1':
+            d = self.getLimit() - self.getPosition()
+        elif direction  == '-1':
+            d = 0 - self.getPosition()
 
-        return self.moveStep(distence)
+        return self.moveStep(str(d))
 
     def stop(self):
         logging.info("stop")
         if self.isMoving:
             self.isMoving = False
             self.estimateStopTime = time.time()
-           
+        return "stop"
+
     def getStatus(self):
         isLimit = False
         isZero = False
@@ -195,43 +194,20 @@ scope = {'x': axis(name = 'scope x',limit = 100000),
         }
 
 specialPoint = {'base':[0,0],
-                'separate':220,
+                'separate':20,
                 'align':10,
                 'contact':0,
+                #0: not set contact
+                #1: contact
+                #2: align
+                #3: separate 
+                'contactStatus':0,
                 'mark1':[0,0],
                 'mark2':[0,0],
                 'focus1':100,
                 'focus2':200,
                 'focus3':300
                 }
-
-def moveChuck(**kwargs):
-    axisName = kwargs.get("name")
-    direction = kwargs.get("direction", 0)
-    distence = kwargs.get("distence", 0)
-
-    if direction == 0 and distence == 0:
-        return 
-    if direction != 0 and distence != 0:
-        return
-    
-    if direction != 0:
-        chuck[axisName].move(direction)
-
-    if distence != 0:
-        chuck[axisName].moveStep(distence)
-
-
-def stopChuck(axisName):
-    chuck[axisName].stop()
-    print "stop"
-
-
-def getChuckPosition():
-    return (chuck['x'].getPosition(),
-         chuck['y'].getPosition(),
-         chuck['z'].getPosition(),
-         chuck['t'].getPosition())
 
 '''
 print getChuckPosition()
