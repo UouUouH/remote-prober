@@ -35,6 +35,7 @@ class CCDService(object)
             self.pacakgeNum = int(self.frameSize/self.packageMaxSize)
         #first the value of id1 is 0, then if it is more than 255,set it as 1
         self.id1 = 0
+        self.defferred  = None
 
 
     def getFrameInfo(self):
@@ -89,14 +90,44 @@ class CCDService(object)
         self.protocol.transport.write(getFremeInfo())
 
     def sendFrame(self):
-        id1 = 0
-        id2 =0#the max value is 255
-        def getPackageInfo():
+        def getPackageInfo(id2):
             return 'ID'+chr(0xff)+chr(0xff&id1)+chr(0xff)+chr(0xff&id2)+chr(0xff)
 
-        def sendPackage():
-            pac = frameList[0][
-            self.protocol.transport.write
+        def sendPackage(id2):
+            pac = getPackageInfo(id2)+frameList[0][id2 : (id2+1)*self.]
+            id2 = id2 + 1
+            self.protocol.transport.write(pac)
+            if id2 == self.packageNum:
+                self.id1 = self.id1 + 1
+                if self.id1 == 256:
+                    self.id1 = 1
+                
+            return id2
+
+        def errHandle(err):
+            log.msg("err: %s" %err)
+            deferred, self.deferred = self.deferred, None
+            deferred.cancel()
+            pass
+
+        def cancelerErr(err):
+            log.msg("cancel err: %s" %err)
+            pass
+
+        if self.deferred is not None:
+            deferred, self.deferred = self.deferred, None
+            deferred.cancel()
+
+        self.deferred = Deferred(cancelerErr)
+        for i in range(0, self.packageNum):
+            self.deferred.addCallbacks(sendPackage, errHandle)
+        self.deferred.callback(0)
+
+
+
+
+
+
 
 
 
