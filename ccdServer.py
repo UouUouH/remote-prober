@@ -18,9 +18,9 @@ class CCDProtocol(DatagramProtol):
         print "no one listening"
 
 
-class CCDService(object)
+class CCDService(object):
 
-    frameDic= {}
+    frameList= [] 
     def __int__(self, protocol):
         self.protocol = protocol
         self.frameWidth = 667
@@ -68,10 +68,8 @@ class CCDService(object)
         return str1
 
     def accpetNewFrame (self, frame):
-        if self.id1 == 256:
-            self.id1 = 1
-        self.frameDic[self.id1] = frame
-        self.id1 = self.id1 + 1
+        self.frameList.append(frame)
+        self.sendFrame()
 
     def parseCommand(self, res):
         if res is not None:
@@ -123,6 +121,23 @@ class CCDService(object)
             self.deferred.addCallbacks(sendPackage, errHandle)
         self.deferred.callback(0)
 
+class ImageGenerator(object):
+    """a virtrual ccd"""
+    def __init__(self, ccdService):
+        self.ccdService = ccdService
+        """#file data format:
+        imagefileName(including the dir);imagefilename2;imagefilename3;.....imagefileelneameN;
+        """
+        self.fileName = fileName
+
+    def generatorImage(self):
+        return image
+
+    def getImageData(self):
+        return
+    
+    def getImageFile(self):
+        """base the file w
 
 
 
